@@ -85,7 +85,7 @@ namespace SecretsSharing.ObjectServices
 
             if (secret == null) return $"No secrets with id = {id}";
 
-            if (secret.IsOneUse) Remove(secret);
+            if (secret.IsOneUse) Delete(secret);
 
             return secret.Text;
         }
@@ -97,7 +97,7 @@ namespace SecretsSharing.ObjectServices
 
             if (textSecret == null) return;
 
-            Remove(textSecret);
+            Delete(textSecret);
         }
 
         public void RemoveFileSecret(string id, string userName)
@@ -107,18 +107,12 @@ namespace SecretsSharing.ObjectServices
 
             if (fileSecret == null) return;
 
-            Remove(fileSecret);
+            Delete(fileSecret);
         }
 
-        private void Remove(TextSecret secret)
+        private void Delete<TEntity>(TEntity entity) where TEntity : class
         {
-            _context.TextSecrets.Remove(secret);
-            _context.SaveChanges();
-        }
-
-        private void Remove(FileSecret secret)
-        {
-            _context.FileSecrets.Remove(secret);
+            _context.Remove(entity);
             _context.SaveChanges();
         }
     }
