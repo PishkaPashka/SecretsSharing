@@ -13,7 +13,8 @@ namespace SecretsSharing.ObjectServices
     {
         string Add(TextSecretViewModel secret, string userName);
         string Add(string path, string fileName, bool isOneUse, string userName);
-        void Remove(string id, string userName);
+        void RemoveTextSecret(string id, string userName);
+        void RemoveFileSecret(string id, string userName);
         IEnumerable<SecretViewModel> GetAllByUserName(string userName);
         string GetById(string id);
         FileSecret GetFileById(string id);
@@ -89,19 +90,35 @@ namespace SecretsSharing.ObjectServices
             return secret.Text;
         }
 
-        public void Remove(string id, string userName)
+        public void RemoveTextSecret(string id, string userName)
         {
-            var secret = _context.TextSecrets
+            var textSecret = _context.TextSecrets
                 .FirstOrDefault(s => s.UserName == userName && s.Id == id);
 
-            if (secret == null) return;
+            if (textSecret == null) return;
 
-            Remove(secret);
+            Remove(textSecret);
+        }
+
+        public void RemoveFileSecret(string id, string userName)
+        {
+            var fileSecret = _context.FileSecrets
+                 .FirstOrDefault(s => s.UserName == userName && s.Id == id);
+
+            if (fileSecret == null) return;
+
+            Remove(fileSecret);
         }
 
         private void Remove(TextSecret secret)
         {
             _context.TextSecrets.Remove(secret);
+            _context.SaveChanges();
+        }
+
+        private void Remove(FileSecret secret)
+        {
+            _context.FileSecrets.Remove(secret);
             _context.SaveChanges();
         }
     }

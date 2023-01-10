@@ -40,8 +40,9 @@ namespace SecretsSharing.Controllers
         public async Task<IActionResult> UploadFile(IFormFile file, bool isOneUse)
         {
             if (file == null) return Content("File not found");
-            
-            string path = $"{_appEnvironment.ContentRootPath}/Files/{file.FileName}";
+
+            var contentRootPath = _appEnvironment.ContentRootPath.Replace('\\', '/');
+            string path = $"{contentRootPath}/Files/{file.FileName}";
 
             using var fileStream = new FileStream(path, FileMode.Create);
             await file.CopyToAsync(fileStream);
@@ -64,7 +65,7 @@ namespace SecretsSharing.Controllers
         [Route("/secret/delete/{id}")]
         public IActionResult Delete(string id)
         {
-            _secretObjectService.Remove(id, _userName);
+            _secretObjectService.RemoveTextSecret(id, _userName);
             return Ok(id);
         }
 
@@ -84,6 +85,12 @@ namespace SecretsSharing.Controllers
         {
             var secret = _secretObjectService.GetFileById(id);
             var bytes = System.IO.File.ReadAllBytes(secret.Path);
+
+            if (secret.IsOneUse)
+            {
+                System.IO.File.Delete(secret.Path);
+                _secretObjectService.RemoveTextSecret(id, _userName);
+            }
 
             return File(bytes, "application/octet-stream", secret.FileName);
         }
