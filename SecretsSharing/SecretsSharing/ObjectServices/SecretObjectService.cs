@@ -9,14 +9,63 @@ using System.Linq;
 
 namespace SecretsSharing.ObjectServices
 {
+    /// <summary>
+    /// A service that provides an interface for adding, getting and removing secrets from db.
+    /// </summary>
     public interface ISecretObjectService
     {
+        /// <summary>
+        /// Add text secret in db
+        /// </summary>
+        /// <param name="secret">ViewModel with data, filled by user</param>
+        /// <param name="userName">Current user</param>
+        /// <returns>Id of secret</returns>
         string Add(TextSecretViewModel secret, string userName);
+
+        /// <summary>
+        /// Add file secret in db
+        /// </summary>
+        /// <param name="path">Path to the file</param>
+        /// <param name="fileName">Name of file with extension</param>
+        /// <param name="isOneUse">Should the secret be deleted after being viewed once</param>
+        /// <param name="userName">Current user</param>
+        /// <returns>Id of secret</returns>
         string Add(string path, string fileName, bool isOneUse, string userName);
+
+        /// <summary>
+        /// Get all secrets for current users
+        /// </summary>
+        /// <param name="userName">Current user</param>
+        /// <returns>All secrets of current user</returns>
         IEnumerable<SecretViewModel> GetAllByUserName(string userName);
-        string GetById(string id);
+
+        /// <summary>
+        /// Get text secred by id
+        /// </summary>
+        /// <param name="id">Identifier of secret</param>
+        /// <returns>Secret text</returns>
+        string GetTextById(string id);
+
+        /// <summary>
+        /// Get file by id
+        /// </summary>
+        /// <param name="id">Identifier of secret</param>
+        /// <returns>Secret file</returns>
         FileSecret GetFileById(string id);
+
+        /// <summary>
+        /// Delete secret by id
+        /// </summary>
+        /// <param name="id">Identifier of secret</param>
+        /// <param name="userName">Current user</param>
+        /// <returns>True if deleting is successful, false if not</returns>
         bool DeleteById(string id, string userName);
+
+        /// <summary>
+        /// Dekete secret by entity
+        /// </summary>
+        /// <typeparam name="TEntity">Generic type, can be TextSecret or FileSecret</typeparam>
+        /// <param name="entity">Entity for removing</param>
         void Delete<TEntity>(TEntity entity) where TEntity : class;
     }
 
@@ -76,7 +125,7 @@ namespace SecretsSharing.ObjectServices
             return secrets;
         }
 
-        public string GetById(string id)
+        public string GetTextById(string id)
         {
             var secret = _context.TextSecrets
                 .FirstOrDefault(s => s.Id == id);

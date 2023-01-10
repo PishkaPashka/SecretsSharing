@@ -74,7 +74,7 @@ namespace SecretsSharing.Controllers
         [Route("/secret/show/{id}")]
         public string Show(string id)
         {
-            var secret = _secretObjectService.GetById(id);
+            var secret = _secretObjectService.GetTextById(id);
             return secret;
         }
 
