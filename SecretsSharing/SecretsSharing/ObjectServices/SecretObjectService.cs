@@ -49,6 +49,8 @@ namespace SecretsSharing.ObjectServices
             var entityId = Guid.NewGuid().ToString();
             var entity = new FileSecret { Id = entityId, UserName = userName, Path = path, FileName = fileName, IsOneUse = isOneUse };
 
+            Add(entity);
+
             return entityId;
         }
 

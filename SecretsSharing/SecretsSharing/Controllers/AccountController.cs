@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SecretsSharing.ViewModels;
 using System.Linq;
@@ -55,6 +56,9 @@ namespace SecretsSharing.Controllers
         [Route("/account/login")]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
+            if (User.Identity.IsAuthenticated)
+                return Content("Already authenticated");
+
             if (!ModelState.IsValid) 
                 return Content("Model state is invalid");
             
@@ -67,12 +71,10 @@ namespace SecretsSharing.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [Route("/account/logout")]
         public async Task<IActionResult> Logout()
         {
-            if (!User.Identity.IsAuthenticated)
-                return Unauthorized();
-
             await _signInManager.SignOutAsync();
             return Ok();
         }
