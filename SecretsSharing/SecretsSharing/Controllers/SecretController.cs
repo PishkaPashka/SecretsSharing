@@ -89,7 +89,7 @@ namespace SecretsSharing.Controllers
             if (secret.IsOneUse)
             {
                 System.IO.File.Delete(secret.Path);
-                _secretObjectService.RemoveTextSecret(id, _userName);
+                _secretObjectService.RemoveFileSecret(id, _userName);
             }
 
             return File(bytes, "application/octet-stream", secret.FileName);
