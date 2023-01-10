@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using SecretsSharing.Models.Secrets;
 
 namespace SecretsSharing.Models
 {
     public class ApplicationContext : IdentityDbContext
     {
+        public DbSet<Secret> TextSecrets { get; set; }
+
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
             : base(options)
         {
