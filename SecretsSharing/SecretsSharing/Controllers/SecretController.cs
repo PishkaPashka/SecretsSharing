@@ -65,8 +65,8 @@ namespace SecretsSharing.Controllers
         [Route("/secret/delete/{id}")]
         public IActionResult Delete(string id)
         {
-            _secretObjectService.RemoveTextSecret(id, _userName);
-            return Ok(id);
+            var result = _secretObjectService.DeleteById(id, _userName);
+            return Ok(result);
         }
 
         [HttpGet]
@@ -89,7 +89,7 @@ namespace SecretsSharing.Controllers
             if (secret.IsOneUse)
             {
                 System.IO.File.Delete(secret.Path);
-                _secretObjectService.RemoveFileSecret(id, _userName);
+                _secretObjectService.Delete(secret);
             }
 
             return File(bytes, "application/octet-stream", secret.FileName);

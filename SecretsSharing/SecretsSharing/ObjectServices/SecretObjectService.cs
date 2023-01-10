@@ -13,11 +13,11 @@ namespace SecretsSharing.ObjectServices
     {
         string Add(TextSecretViewModel secret, string userName);
         string Add(string path, string fileName, bool isOneUse, string userName);
-        void RemoveTextSecret(string id, string userName);
-        void RemoveFileSecret(string id, string userName);
         IEnumerable<SecretViewModel> GetAllByUserName(string userName);
         string GetById(string id);
         FileSecret GetFileById(string id);
+        bool DeleteById(string id, string userName);
+        void Delete<TEntity>(TEntity entity) where TEntity : class;
     }
 
     public class SecretObjectService : ISecretObjectService
@@ -86,27 +86,30 @@ namespace SecretsSharing.ObjectServices
             return secret.Text;
         }
 
-        public void RemoveTextSecret(string id, string userName)
+        public bool DeleteById(string id, string userName)
         {
             var textSecret = _context.TextSecrets
                 .FirstOrDefault(s => s.UserName == userName && s.Id == id);
 
-            if (textSecret == null) return;
+            if (textSecret != null)
+            {
+                Delete(textSecret);
+                return true;
+            }
 
-            Delete(textSecret);
-        }
-
-        public void RemoveFileSecret(string id, string userName)
-        {
             var fileSecret = _context.FileSecrets
-                 .FirstOrDefault(s => s.UserName == userName && s.Id == id);
+                .FirstOrDefault(s => s.UserName == userName && s.Id == id);
 
-            if (fileSecret == null) return;
+            if (fileSecret != null)
+            {
+                Delete(fileSecret);
+                return true;
+            }
 
-            Delete(fileSecret);
+            return false;
         }
 
-        private void Delete<TEntity>(TEntity entity) where TEntity : class
+        public void Delete<TEntity>(TEntity entity) where TEntity : class
         {
             _context.Remove(entity);
             _context.SaveChanges();
