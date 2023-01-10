@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SecretsSharing.ViewModels;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SecretsSharing.Controllers
 {
-    public class AccountController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AccountController : ControllerBase
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
@@ -16,33 +19,62 @@ namespace SecretsSharing.Controllers
             _signInManager = signInManager;
         }
 
-        [HttpGet]
-        public IActionResult Register()
+        [HttpPost]
+        [Route("/account/register")]
+        public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            return View();
+            if (!ModelState.IsValid) Content("Model state is invalid");
+
+            var user = new IdentityUser { Email = model.Email, UserName = model.Email };
+            var result = await _userManager.CreateAsync(user, model.Password);
+            if (result.Succeeded)
+            {
+                await _signInManager.SignInAsync(user, false);
+            }
+            else
+            {
+                foreach (var error in result.Errors)
+                {
+                    //TODO add logger
+                    ModelState.AddModelError("RegistrationError", error.Description);
+                }
+
+                var errors = ModelState
+                    .Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToArray();
+
+                return Content(string.Join(',', errors));
+            }
+
+            return Ok();           
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(RegisterViewModel model)
+        [Route("/account/login")]
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
-            if (ModelState.IsValid)
-            {
-                IdentityUser user = new IdentityUser { Email = model.Email, UserName = model.Email};
-                var result = await _userManager.CreateAsync(user, model.Password);
-                if (result.Succeeded)
-                {
-                    await _signInManager.SignInAsync(user, false);
-                    return RedirectToAction("Index", "Home");
-                }
-                else
-                {
-                    foreach (var error in result.Errors)
-                    {
-                        ModelState.AddModelError(string.Empty, error.Description);
-                    }
-                }
-            }
-            return View(model);
+            if (!ModelState.IsValid) 
+                return Content("Model state is invalid");
+            
+            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
+
+            if (result.Succeeded) 
+                return Ok();
+
+            return Content("Invalid username/password");            
+        }
+
+        [HttpPost]
+        [Route("/account/logout")]
+        public async Task<IActionResult> Logout()
+        {
+            if (!User.Identity.IsAuthenticated)
+                return Unauthorized();
+
+            await _signInManager.SignOutAsync();
+            return Ok();
         }
     }
 }
