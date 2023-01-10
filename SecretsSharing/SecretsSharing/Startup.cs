@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using SecretsSharing.Models;
+using SecretsSharing.ObjectServices;
 
 namespace SecretsSharing
 {
@@ -22,6 +24,14 @@ namespace SecretsSharing
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var mappingConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new MappingProfile());
+            });
+
+            IMapper mapper = mappingConfig.CreateMapper();
+            services.AddSingleton(mapper);
+
             services.AddMvc();
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -40,6 +50,8 @@ namespace SecretsSharing
                 opts.Password.RequireDigit = false;
                 opts.Password.RequireUppercase = false;
             });
+
+            services.AddScoped<ISecretObjectService, SecretObjectService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
