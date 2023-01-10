@@ -39,8 +39,7 @@ namespace SecretsSharing.ObjectServices
             entity.Id = entityId;
             entity.UserName = userName;
 
-            _context.TextSecrets.Add(entity);
-            _context.SaveChanges();
+            Add(entity);
 
             return entityId;
         }
@@ -49,9 +48,6 @@ namespace SecretsSharing.ObjectServices
         {
             var entityId = Guid.NewGuid().ToString();
             var entity = new FileSecret { Id = entityId, UserName = userName, Path = path, FileName = fileName, IsOneUse = isOneUse };
-
-            _context.FileSecrets.Add(entity);
-            _context.SaveChanges();
 
             return entityId;
         }
@@ -113,6 +109,12 @@ namespace SecretsSharing.ObjectServices
         private void Delete<TEntity>(TEntity entity) where TEntity : class
         {
             _context.Remove(entity);
+            _context.SaveChanges();
+        }
+
+        private void Add<TEntity>(TEntity entity) where TEntity : class
+        {
+            _context.Add(entity);
             _context.SaveChanges();
         }
     }
