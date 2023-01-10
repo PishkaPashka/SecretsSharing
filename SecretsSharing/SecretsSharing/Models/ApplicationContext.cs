@@ -6,7 +6,9 @@ namespace SecretsSharing.Models
 {
     public class ApplicationContext : IdentityDbContext
     {
-        public DbSet<Secret> Secrets { get; set; }
+        public DbSet<TextSecret> TextSecrets { get; set; }
+        public DbSet<FileSecret> FileSecrets { get; set; }
+
 
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
             : base(options)

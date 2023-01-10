@@ -13,8 +13,13 @@ namespace SecretsSharing.Models
 
         private void ConfigureMappings()
         {
-            CreateMap<SecretViewModel, Secret>();
-            CreateMap<Secret, SecretViewModel>();
+            CreateMap<TextSecretViewModel, TextSecret>();
+
+            CreateMap<FileSecret, SecretViewModel>()
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Path));
+
+            CreateMap<TextSecret, SecretViewModel>()
+               .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Text));
         }
     }
 }

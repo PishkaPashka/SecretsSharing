@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SecretsSharing.Models;
 
 namespace SecretsSharing.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20230110133719_AddedFileSecrets")]
+    partial class AddedFileSecrets
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -211,9 +213,6 @@ namespace SecretsSharing.Migrations
             modelBuilder.Entity("SecretsSharing.Models.Secrets.FileSecret", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FileName")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsOneUse")

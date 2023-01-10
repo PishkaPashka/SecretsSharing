@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SecretsSharing.Models.Secrets;
 using SecretsSharing.ObjectServices;
 using SecretsSharing.ViewModels;
 using System.Collections.Generic;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
+using System.Threading.Tasks;
 
 namespace SecretsSharing.Controllers
 {
@@ -12,27 +15,46 @@ namespace SecretsSharing.Controllers
     public class SecretController : ControllerBase
     {
         private readonly ISecretObjectService _secretObjectService;
+        private readonly IWebHostEnvironment _appEnvironment;
 
         private string _userName => User.Identity.Name;
 
-        public SecretController(ISecretObjectService secretObjectService)
+        public SecretController(ISecretObjectService secretObjectService, IWebHostEnvironment appEnvironment)
         {
             _secretObjectService = secretObjectService;
+            _appEnvironment = appEnvironment;
         }
 
         [HttpPost]
         [Authorize]
         [Route("/secret/upload")]
-        public IActionResult Upload(SecretViewModel secret)
+        public IActionResult Upload(TextSecretViewModel secret)
         {
             var secretUrl = _secretObjectService.Add(secret, _userName);
+            return Ok(secretUrl);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("/secret/upload-file")]
+        public async Task<IActionResult> UploadFile(IFormFile file, bool isOneUse)
+        {
+            if (file == null) return Content("File not found");
+            
+            string path = $"{_appEnvironment.ContentRootPath}/Files/{file.FileName}";
+
+            using var fileStream = new FileStream(path, FileMode.Create);
+            await file.CopyToAsync(fileStream);
+
+            var secretUrl = _secretObjectService.Add(path, file.FileName, isOneUse, _userName);
+            
             return Ok(secretUrl);
         }
 
         [HttpGet]
         [Authorize]
         [Route("/secret/get-all")]
-        public IEnumerable<Secret> GetAllSecrets()
+        public IEnumerable<SecretViewModel> GetAllSecrets()
         {
             return _secretObjectService.GetAllByUserName(_userName);
         }
@@ -53,6 +75,17 @@ namespace SecretsSharing.Controllers
         {
             var secret = _secretObjectService.GetById(id);
             return secret;
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        [Route("/secret/download/{id}")]
+        public IActionResult Download(string id)
+        {
+            var secret = _secretObjectService.GetFileById(id);
+            var bytes = System.IO.File.ReadAllBytes(secret.Path);
+
+            return File(bytes, "application/octet-stream", secret.FileName);
         }
     }
 }
