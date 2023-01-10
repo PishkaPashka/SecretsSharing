@@ -10,9 +10,10 @@ namespace SecretsSharing.ObjectServices
 {
     public interface ISecretObjectService
     {
-        string AddSecret(SecretViewModel secret, string userName);
-        void RemoveSecret(Secret secret);
+        string Add(SecretViewModel secret, string userName);
+        void Remove(string id, string userName);
         IEnumerable<Secret> GetAllByUserName(string userName);
+        string GetById(string id);
     }
 
     public class SecretObjectService : ISecretObjectService
@@ -26,7 +27,7 @@ namespace SecretsSharing.ObjectServices
             _mapper = mapper;
         }
 
-        public string AddSecret(SecretViewModel secret, string userName)
+        public string Add(SecretViewModel secret, string userName)
         {
             var entity = _mapper.Map<Secret>(secret);
 
@@ -47,7 +48,29 @@ namespace SecretsSharing.ObjectServices
                 .ToArray();
         }
 
-        public void RemoveSecret(Secret secret)
+        public string GetById(string id)
+        {
+            var secret = _context.Secrets
+                .FirstOrDefault(s => s.Id == id);
+
+            if (secret == null) return $"No secrets with id = {id}";
+
+            if (secret.IsOneUse) Remove(secret);
+
+            return secret.Text;
+        }
+
+        public void Remove(string id, string userName)
+        {
+            var secret = _context.Secrets
+                .FirstOrDefault(s => s.UserName == userName && s.Id == id);
+
+            if (secret == null) return;
+
+            Remove(secret);
+        }
+
+        private void Remove(Secret secret)
         {
             _context.Secrets.Remove(secret);
             _context.SaveChanges();

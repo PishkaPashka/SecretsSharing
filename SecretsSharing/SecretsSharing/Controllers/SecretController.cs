@@ -13,6 +13,8 @@ namespace SecretsSharing.Controllers
     {
         private readonly ISecretObjectService _secretObjectService;
 
+        private string _userName => User.Identity.Name;
+
         public SecretController(ISecretObjectService secretObjectService)
         {
             _secretObjectService = secretObjectService;
@@ -23,8 +25,7 @@ namespace SecretsSharing.Controllers
         [Route("/secret/upload")]
         public IActionResult Upload(SecretViewModel secret)
         {
-            var userName = User.Identity.Name;
-            var secretUrl = _secretObjectService.AddSecret(secret, userName);
+            var secretUrl = _secretObjectService.Add(secret, _userName);
             return Ok(secretUrl);
         }
 
@@ -33,8 +34,25 @@ namespace SecretsSharing.Controllers
         [Route("/secret/get-all")]
         public IEnumerable<Secret> GetAllSecrets()
         {
-            var userName = User.Identity.Name;
-            return _secretObjectService.GetAllByUserName(userName);
+            return _secretObjectService.GetAllByUserName(_userName);
+        }
+
+        [HttpDelete]
+        [Authorize]
+        [Route("/secret/delete/{id}")]
+        public IActionResult Delete(string id)
+        {
+            _secretObjectService.Remove(id, _userName);
+            return Ok(id);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        [Route("/secret/show/{id}")]
+        public string Show(string id)
+        {
+            var secret = _secretObjectService.GetById(id);
+            return secret;
         }
     }
 }
